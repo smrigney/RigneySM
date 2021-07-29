@@ -1,0 +1,86 @@
+Sub stocks()
+
+'for loop for sheets
+'establish how many sheets
+Dim sheetnumber As Integer
+sheetnumber = ActiveWorkbook.Worksheets.count
+'loopthrough all the sheets
+For k = 1 To sheetnumber
+    'just in case, set the iterations sheet to active
+    ActiveWorkbook.Worksheets(k).Activate
+
+
+'sort column A a-z
+         With ActiveSheet.Sort
+        .SortFields.Add Key:=Range("a:a"), Order:=xlAscending
+        .SetRange Range("A:G")
+        .Header = xlYes
+        .Apply
+    End With
+
+'add headers
+Cells(1, 9).Value = "Ticker"
+Cells(1, 10).Value = "Yearly Change"
+Cells(1, 11).Value = "Percent Changed"
+Cells(1, 12).Value = "Total Stock Volume"
+
+'ticker
+'dims for ticker
+Dim lastrowa As Double
+Dim lastrowi As Long
+Dim yearopen As Double
+Dim yearclose As Double
+
+lastrowa = Application.WorksheetFunction.CountA(Range("A:A"))
+
+'fill in ticker
+For a = 2 To lastrowa
+lastrowi = Application.WorksheetFunction.CountA(Range("i:i"))
+    If Cells(a, 1).Value <> Cells(lastrowi, 9).Value Then
+        lastrowi = lastrowi + 1
+        Cells(lastrowi, 9).Value = Cells(a, 1).Value
+    End If
+ 
+Next a
+
+'yearly change
+lastrowi = 1
+For a = 2 To lastrowa
+    
+    If Cells(a, 1).Value <> Cells(lastrowi, 9).Value Then
+        lastrowi = lastrowi + 1
+        yearopen = Cells(a, 3).Value
+    End If
+    
+    If Cells(a + 1, 1).Value <> Cells(lastrowi, 9).Value Then
+        yearclose = Cells(a, 6).Value
+        yearlychange = yearclose - yearopen
+        Cells(lastrowi, 10).Value = yearlychange
+        
+        If yearopen > 0 Then
+        Cells(lastrowi, 11).Value = (yearlychange / yearopen)
+        Cells(lastrowi, 11).Style = "percent"
+    End If
+    End If
+
+Next a
+
+'total stock volume of the stock
+For p = 2 To lastrowi
+Dim stockvol As Double
+    stockvol = Application.WorksheetFunction.SumIf(Range("a:a"), Cells(p, 9).Value, Range("g:g"))
+    Cells(p, 12).Value = stockvol
+
+Next p
+
+'conditional formating
+' red = 3 green = 4
+For j = 2 To lastrowi
+    If Cells(j, 10) > 0 Then
+    Cells(j, 10).Interior.ColorIndex = 4
+    Else: Cells(j, 10).Interior.ColorIndex = 3
+    End If
+Next j
+
+Next k
+End Sub
